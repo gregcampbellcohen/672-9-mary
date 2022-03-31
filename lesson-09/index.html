@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8 />
+  <title>Lesson 09 Starter</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #222222;
+      font-family: Lato, sans-serif;
+      color: #dddddd;
+    }
+
+    header {
+      width: 80%;
+      margin: 10px auto 10px auto;
+    }
+
+    h1 {
+      display: inline-block;
+      margin-right: 20px;
+      color: #001323;
+    }
+
+    h2 {
+      display: inline-block;
+      color: #001323;
+    }
+
+    a {
+      color: #004A8B;
+    }
+
+    a:hover {
+      color: rgb(67, 69, 71);
+      text-decoration: none;
+    }
+
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+      background: rgba(63, 63, 63, 0.9);
+    }
+
+    footer {
+      padding: 6px 10%;
+      width: 80%;
+    }
+
+    p {
+      font-size: 1em;
+      color: #001323;
+    }
+
+    .legend {
+      padding: 6px 8px;
+      font-size: 1em;
+      /* Use transparency to blend elements. */ 
+      border: 2px solid rgba(244, 244, 244, 0.2);
+      background: rgba(100, 100, 100, 0.9);
+      color: rgba(244, 244, 244, 0.8);
+      border-radius: 5px;
+    }
+
+    .legend h3 {
+      font-size: 1.1em;
+      font-weight: bolder;
+      color: #ddd; /* Light */
+      margin: 0 0 10px 0;
+    }
+
+    .leaflet-bar a {
+      /* Override the default style for Leaflet's zoom  */
+      background: rgba(100, 100, 100, 0.9);
+      color: rgba(244, 244, 244, 0.8);
+    }
+
+    .legend span {
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin: 0 10px 4px 0;
+    }
+    .legend label {
+    font-size: 1.1em;
+    }
+    .legend label:after {
+    content: '';
+    display: block;
+    clear: both;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Map Title</h1>
+    <h2>Map Subtitle</h2>
+  </header>
+
+  <div id='map'></div>
+
+  <footer>
+    <p>Map authored by YOUR NAME</p>
+    <p>Additional information about the data and map goes here.</p>
+    <p>We must be quiet, soft and gentle. Don't fiddle with it all day. Isn't it great to do something you can't fail at? That's the way I look when I get home late; black and blue. Only think about one thing at a time. Don't get greedy. This is a fantastic little painting.
+
+      Be brave. Making all those little fluffies that live in the clouds. Let's have a nice tree right here. Let's put some happy little clouds in our world.
+      
+      This is your world, whatever makes you happy you can put in it. Go crazy. Trees grow however makes them happy. If these lines aren't straight, your water's going to run right out of your painting and get your floor wet. In life you need colors. The man who does the best job is the one who is happy at his job.
+      
+    </p>
+  </footer>
+
+
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://unpkg.com/simple-statistics@7.2.0/dist/simple-statistics.min.js"></script>
+
+  
+  <script>
+    jQuery("h1").html("Housing Ownership in Kentucky");
+
+
+ 
+    var options = {
+      center: [37.8, -85.8],
+      zoom: 7.4,
+      zoomSnap: .1,
+      zoomControl: false
+    }
+    var map = L.map('map', options);
+
+    var attributeValue = "OWNED_MORT",
+    normValue = "OWNER";
+
+    // $.getJSON() here
+    $.getJSON("data/ky_counties_housing.json", function(data) {
+    L.geoJson(data).addTo(map);
+    });
+    
+    var countyLayer = $.getJSON("data/ky_counties_housing.json", function(data) {
+
+    var dataLayer = L.geoJson(data, {
+      style: function(feature) {
+      return {
+        color: '#dddddd',
+        weight: 1,
+        fillOpacity: 1,
+        fillColor: '#1f78b4'
+        };
+       }          
+      }).addTo(map);
+
+      drawMap(dataLayer); 
+    });
+
+    function drawMap(dataLayer) {
+      var breaks = getClassBreaks(dataLayer);
+      dataLayer.eachLayer(function (layer) {
+        var props = layer.feature.properties;
+        layer.setStyle({
+          fillColor: getColor(props[countyRent], breaks)
+        });
+      });
+      drawLegend(breaks)
+    }; // end drawMap
+
+       function getColor(d, breaks) {
+        if(d <= breaks[0][1]) {
+        return '#f1eef6';
+        } else if(d <= breaks[1][1]) {
+        return '#bdc9e1';
+        } else if(d <= breaks[2][1]) {
+        return '#74a9cf';
+        } else if(d <= breaks[3][1]) {
+        return '#2b8cbe'
+        } else if(d <= breaks[4][1]) {
+        return '#045a8d'
+       }
+      } // end getColor
+
+    function getClassBreaks(dataLayer) {
+
+      // create empty Array for storing values
+      var values = [];
+
+      // loop through all the counties
+      dataLayer.eachLayer(function(layer) {
+      var props = layer.feature.properties;
+      var value = props[attributeValue]/props[normValue];
+      values.push(value);  
+      });
+
+      // determine similar clusters
+      var clusters = ss.ckmeans(values, 5);  
+
+      // create an array of the lowest value within each cluster
+      var breaks = clusters.map(function(cluster){
+        return [cluster[0],cluster.pop()];   
+        });
+
+        return breaks; // return Array of class breaks
+        } // end getClassBreaks function
+        
+
+        function drawLegend(breaks){
+          var legend = L.control({position: 'topleft'});
+          legend.onAdd = function () {
+          var div = L.DomUtil.create('div', 'legend');
+          div.innerHTML = `<h3>${attributeValue} per  ${normValue}</h3>`;
+          for (var i = 0; i < breaks.length; i++) {
+          var color = getColor(breaks[i][0], breaks);
+          div.innerHTML +=
+            `<span style="background:${color}"></span>
+            <label>${(breaks[i][0]*100).toLocaleString()}&mdash;
+            ${(breaks[i][1]*100).toLocaleString()}</label>`;
+          }
+          return div;
+        };
+        legend.addTo(map);
+        }
+
+        // Tell jQuery to wait until data is loaded before executing a function
+      $.when(countyLayer).done(function () {
+      // load, filter, and style the state outline 
+      $.getJSON("data/us_states_500k.geojson", function (data) {
+
+      var stateLayer = L.geoJson(data, {
+        style: function (feature) {
+          return {
+            // Let's experiment with these colors shortly
+            // color: '#222222', // Gray
+            color: '#444444', // White
+            // Make line weight larger than the county outline
+            weight: 2,
+            fillOpacity: 0,
+            // This property allows us control interactivty of layer
+            interactive: false
+          };
+        },
+
+        // Filter for the correct state to use
+        filter: function (feature) {
+          if (feature.properties.NAME == "Kentucky") {
+            return feature;
+          }
+        }
+      });
+
+      // Add layer to map!
+      stateLayer.addTo(map)
+
+  });
+});
+  </script>
+
+</body>
+
+</html>

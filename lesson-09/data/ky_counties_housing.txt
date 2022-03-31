@@ -1,0 +1,20 @@
+These data were obtained through American Fact Finder(http://factfinder.census.gov/); 2010 Census, SF1
+
+
+"STATE_FIP" - State FIP id
+"COUNTY_FIP" - Kentucky County FIP id
+"NAME" - name of county
+"TOTAL" - total number of housing units
+"OCCUPIED" - occupied housing units, out of TOTAL
+"VACANT" - vacant housing units, out of TOTAL
+"OWNER" - owner occupied housing units
+"OWNED_MORT" - owner occupied units with a mortgage or loan
+"OWNED_FREE" - occupied units owned "free and clear"
+"RENTER" - number of units occupied by a renter
+"VACANT_FOR" - vacant units for rent
+"VACANT_REN" - vacant units, rented not occupied
+"VACANT_FO2" - vacant units, for sale only
+"VACANT_SOL" - vacant units, sole not occupied
+"VACANT_SEA" - vacant units used seasonally or for recreational use only
+"VACANT_MIG" - vacant units used for migratory workers
+"VACANT_OTH" - vacant units, other

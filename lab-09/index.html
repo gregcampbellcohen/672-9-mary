@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset=utf-8 />
+  <title>Lab 09 Starter</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+  <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 10px;
+      background: whitesmoke;
+      font-family: Lato, sans-serif;
+      color: #0D0000;
+      width: 80%;
+    }
+
+    header {
+      width: 80%;
+      margin: 0;
+    }
+
+    h1 {
+      display: inline-block;
+      margin-right: 20px;
+      color: #001323;
+    }
+
+    h2 {
+      display: inline-block;
+      color: #001323;
+    }
+
+    #map {
+      width: 100%;
+      height: 800px;
+      margin: 0;
+      background: whitesmoke;
+      border: 2px solid #dddedf;
+    }
+
+    footer {
+      padding: 0;
+      width: 80%;
+    }
+
+    p {
+      font-size: 1em;
+      color: #001323;
+    }
+
+    .legend {
+      padding: 6px 8px;
+      font-size: 1em;
+      /* Use transparency to blend elements. */ 
+      border: 2px solid rgba(244, 244, 244, 0.2);
+      background: rgba(100, 100, 100, 0.9);
+      color: rgba(244, 244, 244, 0.8);
+      border-radius: 5px;
+    }
+
+    .legend h3 {
+      font-size: 1.1em;
+      font-weight: bolder;
+      color: #ddd; /* Light */
+      margin: 0 0 10px 0;
+    }
+
+    .leaflet-bar a {
+      /* Override the default style for Leaflet's zoom  */
+      background: rgba(100, 100, 100, 0.9);
+      color: rgba(244, 244, 244, 0.8);
+    }
+
+    .legend span {
+    width: 20px;
+    height: 20px;
+    float: left;
+    margin: 0 10px 4px 0;
+    }
+    .legend label {
+    font-size: 1.1em;
+    }
+    .legend label:after {
+    content: '';
+    display: block;
+    clear: both;
+    }
+  </style>
+</head>
+
+
+<body>
+  <header>
+    <h1>Rent in the United States</h1><br>
+    <h2>A Historic Crisis of Plunder from the Limping and Battered Working People of this Accursed Country</h2>
+  </header>
+
+  <div id="map"></div>
+
+  <section>
+		<div class="row"></div>
+
+			<div class="first-column">
+				<h2>Background</h2>
+				<p>
+				All data used in this project was produced by joining data downloaded from American FactFinder with US county polygons downloaded from the US Census Cartographic Boundary Shapefiles. The map was made using <a href="https://leafletjs.com/"> Leaflet</a>.
+				</p>
+
+				<p><b>Social links</b></p>
+				<ul>
+					<li>See my projects on GitHub: <a href="https://github.com/gregcampbellcohen">Greg Campbell-Cohen</a>. </li>
+					<li>Follow me on Twitter: <a href="https://twitter.com/gcampbellcohen">@gcampbellcohen</a>. </li>
+					<li>Visit my <a href='https://www.linkedin.com/in/greg-campbell-cohen-96614792/'>LinkedIn</a>. </li>
+				</ul>
+
+
+			</div>
+			</div>
+		</div>
+	</section>
+	<footer>
+		<hr>
+
+		<a href="https://newmapsplus.github.io">
+			<img src="https://newmapsplus.github.io/assets/graphics/logo-2018-nmp-75px-h-gray.png" alt="University of Kentucky Geography">
+		</a>
+
+		<a href="https://uky-gis.github.io">
+			<img src="https://newmapsplus.github.io/assets/graphics/logo-2018-geography-75px-h.png" alt="University of Kentucky Geography">
+		</a>
+
+	</footer>
+
+  <!-- Load scripts using Subresource Integrity (SRI) is a security feature 
+      that enables browsers to verify that resources they fetch (from a CDN) 
+      are delivered without unexpected manipulation. -->
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+    integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+  <script src='https://unpkg.com/simple-statistics@7.2.0/dist/simple-statistics.min.js'>
+  </script>
+
+  <script>
+    
+    var options = {
+      center: [37.09, -95.7],
+      zoom: 5,
+      zoomSnap: .1,
+      zoomControl: true
+    }
+    var map = L.map('map', options);
+
+    var countyName = "NAME",
+    countyRent = "RENT";
+
+    $.getJSON("data/counties_median_rent_2015.json", function(data) {
+    L.geoJson(data).addTo(map);
+    });
+
+    var countyLayer = $.getJSON("data/counties_median_rent_2015.json", function(data) {
+
+     var dataLayer = L.geoJson(data, {
+        style: function(feature) {
+        return {
+        color: '#dddddd',
+         weight: 1,
+         fillOpacity: 1,
+         fillColor: '#1f78b4'
+        };
+       },
+       onEachFeature: function (feature, layer) {
+			layer.bindPopup(
+			  "<b><big><big>" +
+				layer.feature.properties.NAME +
+				" County </b></big><br>" +			
+				"<b>Average Rent: </b>$" +
+				layer.feature.properties.RENT
+			);
+		  },          
+      }).addTo(map);
+
+       drawMap(dataLayer); 
+      });
+
+      function drawMap(dataLayer) {
+        var breaks = getClassBreaks(dataLayer);
+          dataLayer.eachLayer(function (layer) {
+        var props = layer.feature.properties.RENT;
+          layer.setStyle({
+          fillColor: getColor(props, breaks)
+        });
+        
+      });
+      drawLegend(breaks)
+      }; // end drawMap
+
+       function getColor(d, breaks) {
+        if(d <= parseFloat(breaks[0][1])) {
+        return '#DEEDCF';
+        } else if(d <= parseFloat(breaks[1][1])) {
+        return '#74C67A';
+        } else if(d <= parseFloat(breaks[2][1])) {
+        return '#1D9A6C';
+        } else if(d <= parseFloat(breaks[3][1])) {
+        return '#137177'
+        } else if(d <= parseFloat(breaks[4][1])) {
+        return '#0A2F51'
+       }
+      } // end getColor
+
+       function getClassBreaks(dataLayer) {
+
+      // create empty Array for storing values
+      var values = [];
+
+      // loop through all the counties
+      dataLayer.eachLayer(function(layer) {
+      var props = layer.feature.properties;
+      var value = props[countyRent];
+      values.push(value);  
+      });
+
+      // determine similar clusters
+      var clusters = ss.ckmeans(values, 5);  
+
+      // create an array of the lowest value within each cluster
+      var breaks = clusters.map(function(cluster){
+        return [cluster[0],cluster.pop()];   
+        });
+
+        return breaks; // return Array of class breaks
+        } // end getClassBreaks function
+        
+
+        function drawLegend(breaks){
+          var legend = L.control({position: 'topleft'});
+          legend.onAdd = function () {
+          var div = L.DomUtil.create('div', 'legend');
+          div.innerHTML = `<h3>Average Rent by County</h3>`;
+          for (var i = 0; i < breaks.length; i++) {
+          var color = getColor(breaks[i][0], breaks);
+          div.innerHTML +=
+            `<span style="background:${color}"></span>
+            <label>$${(breaks[i][0]*1).toLocaleString()}&mdash;
+            $${(breaks[i][1]*1).toLocaleString()}</label>`;
+          }
+          return div;
+        };
+        legend.addTo(map);
+        }
+        
+
+
+  </script>
+
+</body>
+
+</html>
